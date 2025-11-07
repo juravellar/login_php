@@ -1,73 +1,59 @@
-<?php  
-	switch($_REQUEST['acao']){
-		case 'cadastrar':
-			$nome = $_POST['nome'];
-			$email = $_POST['email'];
-			$usuario = $_POST['usuario'];
-			$senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
-			$data_nasc = $_POST['data_nasc'];
+<?php
+include("config.php");
 
-			$sql = "INSERT INTO usuarios (nome, email, usuario, senha, data_nasc) VALUES ('{$nome}', '{$email}', '{$usuario}', '{$senha}', '{$data_nasc}')";
+header('Content-Type: application/json');
 
-			$res = $conn->query($sql);
+$acao = $_POST['acao'] ?? '';
+$resposta = ['status' => 'erro', 'msg' => 'Ação inválida.'];
 
-			if ($res==true) {
-				print "<script>alert('Cadastrado com sucesso!');</script>";
-				print "<script>location.href='?page=dashboard';</script>";
-			} else {
-				print "<script>alert('Não foi possível cadastrar!');</script>";
-				print "<script>location.href='?page=dashboard';</script>";
-			}
-			break;
+switch($acao) {
+  case 'cadastrar':
+    $nome = $_POST['nome'];
+    $email = $_POST['email'];
+    $usuario = $_POST['usuario'];
+    $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+    $data_nasc = $_POST['data_nasc'];
 
-		case 'editar':
-			$nome = $_POST['nome'];
-			$email = $_POST['email'];
-			$usuario = $_POST['usuario'];
-			$data_nasc = $_POST['data_nasc'];
+    $sql = "INSERT INTO usuarios (nome, email, usuario, senha, data_nasc) 
+            VALUES ('$nome', '$email', '$usuario', '$senha', '$data_nasc')";
+    $ok = $conn->query($sql);
 
-			if (!empty($_POST['senha'])) {
-		        $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
-		        $sql = "UPDATE usuarios SET 
-		                    nome='{$nome}',
-		                    email='{$email}',
-		                    usuario='{$usuario}',
-		                    senha='{$senha}',
-		                    data_nasc='{$data_nasc}'
-		                WHERE id=".$_REQUEST["id"];
-		    } else {
-		        $sql = "UPDATE usuarios SET 
-		                    nome='{$nome}',
-		                    email='{$email}',
-		                    usuario='{$usuario}',
-		                    data_nasc='{$data_nasc}'
-		                WHERE id=".$_REQUEST["id"];
-		    }
+    $resposta = $ok 
+      ? ['status' => 'ok', 'msg' => 'Cadastrado com sucesso!']
+      : ['status' => 'erro', 'msg' => 'Erro ao cadastrar!'];
+    break;
 
-			$res = $conn->query($sql);
+  case 'editar':
+    $id = $_POST['id'];
+    $nome = $_POST['nome'];
+    $email = $_POST['email'];
+    $usuario = $_POST['usuario'];
+    $data_nasc = $_POST['data_nasc'];
+    $senha = $_POST['senha'] ?? '';
 
-			if ($res==true) {
-				print "<script>alert('Editado com sucesso!');</script>";
-				print "<script>location.href='?page=listar';</script>";
-			} else {
-				print "<script>alert('Não foi possível editar!');</script>";
-				print "<script>location.href='?page=listar';</script>";
-			}
-			break;
-			
-		case 'excluir':
+    if (!empty($senha)) {
+      $senha = password_hash($senha, PASSWORD_DEFAULT);
+      $sql = "UPDATE usuarios SET 
+                nome='$nome', email='$email', usuario='$usuario', senha='$senha', data_nasc='$data_nasc'
+              WHERE id=$id";
+    } else {
+      $sql = "UPDATE usuarios SET 
+                nome='$nome', email='$email', usuario='$usuario', data_nasc='$data_nasc'
+              WHERE id=$id";
+    }
+    $ok = $conn->query($sql);
+    $resposta = $ok 
+      ? ['status' => 'ok', 'msg' => 'Editado com sucesso!']
+      : ['status' => 'erro', 'msg' => 'Erro ao editar!'];
+    break;
 
-			$sql = "DELETE FROM usuarios WHERE id=".$_REQUEST["id"];
+  case 'excluir':
+    $id = $_POST['id'];
+    $ok = $conn->query("DELETE FROM usuarios WHERE id=$id");
+    $resposta = $ok 
+      ? ['status' => 'ok', 'msg' => 'Excluído com sucesso!']
+      : ['status' => 'erro', 'msg' => 'Erro ao excluir!'];
+    break;
+}
 
-			$res = $conn->query($sql);
-			
-			if ($res==true) {
-				print "<script>alert('Excluído com sucesso!');</script>";
-				print "<script>location.href='?page=listar';</script>";
-			} else {
-				print "<script>alert('Não foi possível excluir!');</script>";
-				print "<script>location.href='?page=listar';</script>";
-			}
-			break;
-	}
-?>
+echo json_encode($resposta);
