@@ -50,7 +50,7 @@ include("config.php");
         <img src="assets/img/undraw_enter-password_1kl4.svg" alt="Login" class="img-fluid p-4" style="max-height: 380px;">
       </div>
       <div id="conteudo-login" class="col-md-6 bg-white p-5 d-flex flex-column justify-content-center">
-        <h3 class="text-center mb-4 fw-bold text-primary">Acesso Restrito</h3>
+        <h3 class="text-center mb-4 fw-bold text-primary">Login</h3>
         <form id="formLogin">
           <div class="mb-3">
             <label class="form-label">Usuário</label>
